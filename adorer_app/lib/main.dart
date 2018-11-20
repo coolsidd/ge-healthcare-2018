@@ -1,33 +1,25 @@
 import 'package:flutter/material.dart';
+import 'games.dart' as Games;
 
 void main() {
   runApp(MaterialApp(
     title: "Adorer",
     debugShowCheckedModeBanner: false,
-    home: MyApp(),
+    home: new MyHomePage(),
   ));
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      title: 'Home Screen',
-      theme: new ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: new MyHomePage(title: 'Adorer Home Screen'),
-    );
+    return MyHomePage();
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-  final String title;
   final drawerItems = [
     DrawerItem("Home", Icons.developer_board, true, Text("Screen 1")),
-    DrawerItem("Games", Icons.developer_board, true, Text("Screen 2"), ontapped: (){print("Well");}, switchOnTap: false),
+    DrawerItem("Games", Icons.developer_board, true, Text("Screen 2"), ontapped: (){print("Well");},drawerItemWidget: Games.MainScreen()),
     DrawerItem("Activities", Icons.developer_board, true, Text("Screen 3")),
     DrawerItem("Stats", Icons.developer_board, true, Text("Screen 4")),
   ];
@@ -100,7 +92,7 @@ class DrawerItem {
   Function() ontapped;
   bool switchOnTap;
   DrawerItem(this.title, this.icon, this.appBarEnabled, this.appBarTitle,
-      {this.ontapped, this.switchOnTap}) {
+      {this.ontapped, this.switchOnTap, this.drawerItemWidget}) {
     if (this.ontapped == null) {
       this.ontapped =() {
         return null;
