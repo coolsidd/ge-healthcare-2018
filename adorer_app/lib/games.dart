@@ -16,7 +16,7 @@ class MainScreenState extends State<MainScreen> {
           ListTile(
             title: Text("Game1"),
             onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context) => Game1()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) =>Game1()));
             },
           )
         ],

@@ -17,6 +17,13 @@ class Game1State extends State<Game1> {
   int level = 4;
   int number = 10;
   int timeout = 3000;
+  Stopwatch watch;
+  Board board;
+  @override
+  void initState(){
+    super.initState();
+    watch = Stopwatch()..start();
+  }
   Widget returnStage() {
     switch (stage) {
       case 0:
@@ -39,30 +46,42 @@ class Game1State extends State<Game1> {
           ),
         );
         break;
-      case 1:
-        return Board(4, 10, 3000,progressLevel);
       default:
-        return Container();
+        board = new Board(level, number, timeout, progressLevel);
+        return Scaffold(
+          body: board,
+        );
     }
   }
-   progressLevel() {
-    setState(() {
-      level++;
-      number++;
-      timeout -= 10;
-    });
+
+  progressLevel(double accuracy, int time) {
+    print("Accuracy = $accuracy");
+    print("Time = $time");
+    print("LNT: $level$number$timeout");
+    if(watch.elapsed.inSeconds > 90){
+      Navigator.pop(context);
+    }
+    if(accuracy<0.7){
+      stage = 0;
+      setState(() {});
+      return;
+    }
+    level++;
+    number++;
+    timeout -= 10;
+    stage =0;
+    board.createState();
+    setState(() {});
   }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Game1",
-      home: returnStage(),
-    );
+    print("Building");
+    return returnStage();
   }
 }
 
 class Board extends StatefulWidget {
-
   final int size;
   final int number;
   final int timeout;
@@ -70,14 +89,15 @@ class Board extends StatefulWidget {
   Board(this.size, this.number, this.timeout, this.callbackToNextLevel);
   @override
   State<StatefulWidget> createState() {
-    return BoardState();
+    return new BoardState();
   }
 }
 
 class BoardState extends State<Board> {
+  int tries;
   Timer timer;
   @override
-  initState(){
+  initState() {
     super.initState();
     resetBoard();
     timer = new Timer(Duration(milliseconds: widget.timeout), () {
@@ -85,15 +105,21 @@ class BoardState extends State<Board> {
         hideTiles();
       });
     });
+    tries = 0;
+    watch = Stopwatch();
   }
+
   @override
-  void dispose(){
+  void dispose() {
     super.dispose();
     timer.cancel();
   }
+
   List<List<TileState>> uiState;
   bool gameNotStarted = true;
+  Stopwatch watch;
   void resetBoard() {
+    print("reseting board");
     int leftToMark = widget.number;
     uiState = List<List<TileState>>.generate(widget.size, (row) {
       return List<TileState>.generate(widget.size, (column) {
@@ -111,17 +137,28 @@ class BoardState extends State<Board> {
         leftToMark--;
       }
     }
+    print("board reset");
   }
-  void hideTiles(){
-    for(int i = 0; i<uiState.length;i++){
+
+  void hideTiles() {
+    print("hiding tiles");
+    for (int i = 0; i < uiState.length; i++) {
       for (int j = 0; j < uiState[0].length; j++) {
-        if(uiState[i][j] == TileState.correctRevealed){
+        if (uiState[i][j] == TileState.correctRevealed) {
           uiState[i][j] = TileState.correctCovered;
         }
       }
     }
+    watch.start();
+    this.gameNotStarted = false;
+    print("tiles hid");
   }
+
   void uncoverTile(row, col) {
+    if (this.gameNotStarted) {
+      return;
+    }
+    tries++;
     if (uiState[row][col] == TileState.correctCovered) {
       print("Congrats");
       setState(() {
@@ -133,15 +170,18 @@ class BoardState extends State<Board> {
     }
     if (winCheck()) {
       print("You won!");
-      Navigator.of(context).pop();
-      
+      widget.callbackToNextLevel(
+          (widget.number) / tries, watch.elapsed.inMilliseconds);
     }
   }
 
   bool winCheck() {
-    for (int i = 0; i < uiState.length; i++){
-      for (int j = 0; j < uiState.length; j++){
-        if(uiState[i][j] == TileState.correctCovered){
+    if(widget.number/tries < 0.25){
+      return true;
+    }
+    for (int i = 0; i < uiState.length; i++) {
+      for (int j = 0; j < uiState.length; j++) {
+        if (uiState[i][j] == TileState.correctCovered) {
           return false;
         }
       }
@@ -163,25 +203,28 @@ class BoardState extends State<Board> {
 
   @override
   Widget build(BuildContext context) {
+    print("Building : LNT${widget.size}${widget.number}${widget.timeout}");
     return Scaffold(
-      body: Container(
-        constraints: BoxConstraints.expand(),
-        child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List<Widget>.generate(widget.size, (row) {
-          return Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: List<Widget>.generate(widget.size, (col) {
-                return Expanded(
-                  child: InkWell(
-                  onTap: (){
-                    uncoverTile(row, col);
-                  },
-                  child: Card(
-                  color: getColor(row, col),
-                )));
-              })));
-        }))));
+        body: Container(
+            constraints: BoxConstraints.expand(),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: List<Widget>.generate(widget.size, (row) {
+                  return Row(
+                          children: List<Widget>.generate(widget.size, (col) {
+                            return Expanded(
+                                child: InkWell(
+                                    onTap: () {
+                                      uncoverTile(row, col);
+                                    },
+                                    child: AspectRatio(
+                                      child: Card(
+                                      color: getColor(row, col),                                      
+                                    ), aspectRatio: 1.0,
+                                    
+                                    )));
+                          }));
+                }))));
   }
 }
