@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'games.dart' as Games;
+import 'graphs.dart' as Graphs;
 
 void main() {
   runApp(MaterialApp(
@@ -19,8 +20,8 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   final drawerItems = [
     DrawerItem("Home", Icons.developer_board, true, Text("Screen 1")),
-    DrawerItem("Games", Icons.developer_board, true, Text("Screen 2"), ontapped: (){print("Well");},drawerItemWidget: Games.MainScreen()),
-    DrawerItem("Activities", Icons.developer_board, true, Text("Screen 3")),
+    DrawerItem("Games", Icons.developer_board, true, Text("Screen 2"), ontapped: (){print("Well");},drawerItemWidget:()=> Games.MainScreen()),
+    DrawerItem("Activities", Icons.developer_board, true, Text("Graphs"),drawerItemWidget:()=> Graphs.GraphsWidget()),
     DrawerItem("Stats", Icons.developer_board, true, Text("Screen 4")),
   ];
   @override
@@ -66,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
               title: widget.drawerItems[_selectedDrawerIndex].appBarTitle,
             )
           : null,
-      body: widget.drawerItems[_selectedDrawerIndex].drawerItemWidget,
+      body: widget.drawerItems[_selectedDrawerIndex].drawerItemWidget(),
       drawer: Drawer(
           child: ListView(
         children: <Widget>[
@@ -88,7 +89,7 @@ class DrawerItem {
   IconData icon;
   bool appBarEnabled;
   Text appBarTitle;
-  Widget drawerItemWidget;
+  Function() drawerItemWidget;
   Function() ontapped;
   bool switchOnTap;
   DrawerItem(this.title, this.icon, this.appBarEnabled, this.appBarTitle,
@@ -100,6 +101,11 @@ class DrawerItem {
     }
     if (this.switchOnTap == null) {
       switchOnTap = true;
+    }
+    if(this.drawerItemWidget == null){
+      drawerItemWidget = (){
+        return Container();
+      };
     }
   }
 }

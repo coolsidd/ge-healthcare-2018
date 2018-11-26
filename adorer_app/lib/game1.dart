@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:async';
 import 'package:vibrate/vibrate.dart';
+import 'dart:io';
+import 'package:csv/csv.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:core';
 
 enum TileState { covered, revealed, correctCovered, correctRevealed }
 
@@ -13,17 +17,21 @@ class Game1 extends StatefulWidget {
 }
 
 class Game1State extends State<Game1> {
+  
   int stage = 0;
   int level = 4;
   int number = 10;
   int timeout = 3000;
+  int gamesWon = 0;
+  int tries = 0;
   Stopwatch watch;
   Board board;
   @override
-  void initState(){
+  void initState() {
     super.initState();
     watch = Stopwatch()..start();
   }
+  
   Widget returnStage() {
     switch (stage) {
       case 0:
@@ -53,15 +61,23 @@ class Game1State extends State<Game1> {
         );
     }
   }
+  Future<Null> writeData(String data) async{
+    final directory = await getApplicationDocumentsDirectory();
+    final File file = File("${directory.path}/graphData.csv");
+    file.writeAsString(data, mode: FileMode.append);
+  }
 
   progressLevel(double accuracy, int time) {
     print("Accuracy = $accuracy");
     print("Time = $time");
     print("LNT: $level$number$timeout");
-    if(watch.elapsed.inSeconds > 90){
+    String data = ListToCsvConverter().convert([[DateTime.now().toIso8601String(),1,timeout,number,level,accuracy,time,tries],],delimitAllFields: true); // 1 corresponds to the gameNo.
+    writeData(data);
+    if (watch.elapsed.inSeconds > 90) {
       Navigator.pop(context);
     }
-    if(accuracy<0.7){
+    tries++;
+    if (accuracy < 0.7) {
       stage = 0;
       setState(() {});
       return;
@@ -69,7 +85,8 @@ class Game1State extends State<Game1> {
     level++;
     number++;
     timeout -= 10;
-    stage =0;
+    stage = 0;
+    gamesWon++;
     board.createState();
     setState(() {});
   }
@@ -121,7 +138,7 @@ class BoardState extends State<Board> {
   void resetBoard() {
     print("reseting board");
     int leftToMark = widget.number;
-    uiState = List<List<TileState>>.generate(widget.size, (row) {
+    uiState = new List<List<TileState>>.generate(widget.size, (row) {
       return List<TileState>.generate(widget.size, (column) {
         return TileState.covered;
       });
@@ -176,7 +193,7 @@ class BoardState extends State<Board> {
   }
 
   bool winCheck() {
-    if(widget.number/tries < 0.25){
+    if (widget.number / tries < 0.25) {
       return true;
     }
     for (int i = 0; i < uiState.length; i++) {
@@ -212,19 +229,19 @@ class BoardState extends State<Board> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: List<Widget>.generate(widget.size, (row) {
                   return Row(
-                          children: List<Widget>.generate(widget.size, (col) {
-                            return Expanded(
-                                child: InkWell(
-                                    onTap: () {
-                                      uncoverTile(row, col);
-                                    },
-                                    child: AspectRatio(
-                                      child: Card(
-                                      color: getColor(row, col),                                      
-                                    ), aspectRatio: 1.0,
-                                    
-                                    )));
-                          }));
+                      children: List<Widget>.generate(widget.size, (col) {
+                    return Expanded(
+                        child: InkWell(
+                            onTap: () {
+                              uncoverTile(row, col);
+                            },
+                            child: AspectRatio(
+                              child: Card(
+                                color: getColor(row, col),
+                              ),
+                              aspectRatio: 1.0,
+                            )));
+                  }));
                 }))));
   }
 }
