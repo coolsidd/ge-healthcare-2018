@@ -24,6 +24,7 @@ dependencies:
   csv: ^4.0.1
   utf: ^0.9.0+5
   path_provider: ^0.4.1
+  sensors: ^0.3.5
 dev_dependencies:
   flutter_test:
     sdk: flutter
