@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'games.dart' as Games;
 import 'graphs.dart' as Graphs;
+import 'sleep.dart' as Sleep;
+import 'activities.dart' as Activities;
 
 void main() {
   runApp(MaterialApp(
@@ -19,10 +21,11 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   final drawerItems = [
-    DrawerItem("Home", Icons.developer_board, true, Text("Screen 1")),
-    DrawerItem("Games", Icons.developer_board, true, Text("Screen 2"), ontapped: (){print("Well");},drawerItemWidget:()=> Games.MainScreen()),
-    DrawerItem("Activities", Icons.developer_board, true, Text("Graphs"),drawerItemWidget:()=> Graphs.GraphsWidget()),
-    DrawerItem("Stats", Icons.developer_board, true, Text("Screen 4")),
+    DrawerItem("Home", Icons.home, true, Text("Screen 1")),
+    DrawerItem("Games", Icons.games, true, Text("Screen 2"), ontapped: (){print("Well");},drawerItemWidget:()=> Games.MainScreen()),
+    DrawerItem("Graphs", Icons.insert_chart, true, Text("Graphs"),drawerItemWidget:()=> Graphs.GraphsWidget()),
+    DrawerItem("Sleep", Icons.hotel, true, Text("Sleep"),drawerItemWidget: ()=> Sleep.SleepWidget()),
+    DrawerItem("Activities", Icons.list, true, Text("My Activities"),drawerItemWidget: ()=> Activities.MainScreen(),
   ];
   @override
   _MyHomePageState createState() => new _MyHomePageState();
