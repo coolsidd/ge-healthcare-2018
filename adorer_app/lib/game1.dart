@@ -71,7 +71,8 @@ class Game1State extends State<Game1> {
     print("Accuracy = $accuracy");
     print("Time = $time");
     print("LNT: $level$number$timeout");
-    String data = ListToCsvConverter().convert([[DateTime.now().toIso8601String(),1,timeout,number,level,accuracy,time,tries],],delimitAllFields: true); // 1 corresponds to the gameNo.
+    String data = ListToCsvConverter().convert([[DateTime.now().toIso8601String(),1,timeout,number,level,accuracy,time,tries]]); // 1 corresponds to the gameNo.
+    data = data + "\r\n";
     writeData(data);
     if (watch.elapsed.inSeconds > 90) {
       Navigator.pop(context);
