@@ -17,21 +17,19 @@ class Game1 extends StatefulWidget {
 }
 
 class Game1State extends State<Game1> {
-  
   int stage = 0;
   int level = 4;
   int number = 10;
   int timeout = 3000;
   int gamesWon = 0;
   int tries = 0;
-  Stopwatch watch;
+  Stopwatch watch = Stopwatch();
   Board board;
   @override
   void initState() {
     super.initState();
-    watch = Stopwatch()..start();
   }
-  
+
   Widget returnStage() {
     switch (stage) {
       case 0:
@@ -55,13 +53,17 @@ class Game1State extends State<Game1> {
         );
         break;
       default:
+        if (watch.isRunning == false) {
+          watch = Stopwatch()..start();
+        }
         board = new Board(level, number, timeout, progressLevel);
         return Scaffold(
           body: board,
         );
     }
   }
-  Future<Null> writeData(String data) async{
+
+  Future<Null> writeData(String data) async {
     final directory = await getApplicationDocumentsDirectory();
     final File file = File("${directory.path}/graphData.csv");
     file.writeAsString(data, mode: FileMode.append);
@@ -71,7 +73,18 @@ class Game1State extends State<Game1> {
     print("Accuracy = $accuracy");
     print("Time = $time");
     print("LNT: $level$number$timeout");
-    String data = ListToCsvConverter().convert([[DateTime.now().toIso8601String(),1,timeout,number,level,accuracy,time,tries]]); // 1 corresponds to the gameNo.
+    String data = ListToCsvConverter().convert([
+      [
+        DateTime.now().toIso8601String(),
+        1,
+        timeout,
+        number,
+        level,
+        accuracy,
+        time,
+        tries
+      ]
+    ]); // 1 corresponds to the gameNo.
     data = data + "\r\n";
     writeData(data);
     if (watch.elapsed.inSeconds > 90) {
