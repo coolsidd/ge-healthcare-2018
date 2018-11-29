@@ -25,7 +25,7 @@ class MyHomePage extends StatefulWidget {
     DrawerItem("Games", Icons.games, true, Text("Screen 2"), ontapped: (){print("Well");},drawerItemWidget:()=> Games.MainScreen()),
     DrawerItem("Graphs", Icons.insert_chart, true, Text("Graphs"),drawerItemWidget:()=> Graphs.GraphsWidget()),
     DrawerItem("Sleep", Icons.hotel, true, Text("Sleep"),drawerItemWidget: ()=> Sleep.SleepWidget()),
-    DrawerItem("Activities", Icons.list, true, Text("My Activities"),drawerItemWidget: ()=> Activities.MainScreen(),
+    DrawerItem("Activities", Icons.list, true, Text("My Activities"),drawerItemWidget: ()=> Activities.MainScreen()),
   ];
   @override
   _MyHomePageState createState() => new _MyHomePageState();
