@@ -82,7 +82,7 @@ class Game1State extends State<Game1> {
         level,
         accuracy,
         time,
-        tries
+        tries,
       ]
     ]); // 1 corresponds to the gameNo.
     data = data + "\r\n";
