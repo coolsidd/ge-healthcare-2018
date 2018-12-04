@@ -3,6 +3,7 @@ import 'games.dart' as Games;
 import 'graphs.dart' as Graphs;
 import 'sleep.dart' as Sleep;
 import 'activities.dart' as Activities;
+import 'emotion.dart' as Emotion;
 
 void main() {
   runApp(MaterialApp(
@@ -24,8 +25,9 @@ class MyHomePage extends StatefulWidget {
     DrawerItem("Home", Icons.home, true, Text("Screen 1")),
     DrawerItem("Games", Icons.games, true, Text("Screen 2"), ontapped: (){print("Well");},drawerItemWidget:()=> Games.MainScreen()),
     DrawerItem("Graphs", Icons.insert_chart, true, Text("Graphs"),drawerItemWidget:()=> Graphs.GraphsWidget()),
-    DrawerItem("Sleep", Icons.hotel, true, Text("Sleep"),drawerItemWidget: ()=> Sleep.SleepWidget()),
+    DrawerItem("Sleep", Icons.hotel, true, Text("Sleep"),drawerItemWidget: ()=> Sleep.SleepScreen()),
     DrawerItem("Activities", Icons.list, true, Text("My Activities"),drawerItemWidget: ()=> Activities.MainScreen()),
+    DrawerItem("Emotion Detect", Icons.list, true, Text("Detecting..."),drawerItemWidget: ()=> Emotion.EmotionWidget()),
   ];
   @override
   _MyHomePageState createState() => new _MyHomePageState();
@@ -79,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [Text("Drawer Header")])),
           Column(
-            children: drawerOptions,
+            children: [drawerOptions,[Divider()],].expand((x) =>x).toList(),
           ),
         ],
       )),

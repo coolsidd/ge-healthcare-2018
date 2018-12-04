@@ -25,6 +25,9 @@ dependencies:
   utf: ^0.9.0+5
   path_provider: ^0.4.1
   sensors: ^0.3.5
+  tflite: ^0.0.4
+  camera: ^0.2.6
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
