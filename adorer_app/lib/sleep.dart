@@ -4,8 +4,168 @@ import 'dart:async';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:path_provider/path_provider.dart';
 import 'dart:core';
+import 'dart:math';
 import 'dart:io';
 import 'package:csv/csv.dart' as csv;
+
+class SleepScreen extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return SleepScreenState();
+  }
+}
+
+class SleepScreenState extends State<SleepScreen> {
+  Map<String, List<List>> previousData = Map();
+  List<charts.Series<List, DateTime>> graphData;
+  Future<Null> readData() async {
+    final directory = await getApplicationDocumentsDirectory();
+    if (FileSystemEntity.typeSync("${directory.path}/sleepData.csv") !=
+            FileSystemEntityType.notFound &&
+        FileSystemEntity.typeSync("${directory.path}/sleepMeta.csv") !=
+            FileSystemEntityType.notFound) {
+      final File file = File("${directory.path}/sleepData.csv");
+      final File fileMeta = File("${directory.path}/sleepMeta.csv");
+      previousData["history"] =
+          csv.CsvToListConverter().convert(await fileMeta.readAsString());
+      previousData["last"] =
+          csv.CsvToListConverter().convert(await file.readAsString());
+      print("data loaded");
+
+      setState(() {});
+    }
+  }
+
+  Widget getLastSleepsData() {
+    List<Widget> results = [];
+    if (!(previousData.containsKey("history") &&
+        previousData.containsKey("last"))) {
+      readData();
+      results = [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
+          child: Text(
+            "The results will display here once you start tracking your sleep.",
+            style: TextStyle(fontWeight: FontWeight.w300),
+          ),
+        )
+      ];
+    } else {
+      print("data loaded now processing");
+      DateTime start =
+          DateTime.parse(previousData["history"].last[0].toString());
+      DateTime end = DateTime.parse(previousData['history'].last[1].toString());
+      print(previousData["last"][0]);
+      List<List> distanceOnly = List.generate(previousData["last"].length, (i) {
+        return [
+          DateTime.parse(previousData["last"][i][0]),
+          (previousData["last"][i].sublist(1)).reduce((a, b) {
+            return a.abs() + b.abs();
+          })
+        ];
+      });
+      print(distanceOnly);
+      print("Sorting");
+      distanceOnly.sort((a, b) {
+        return b[1].compareTo(a[1]);
+      });
+      distanceOnly.removeRange(0, (distanceOnly.length * 0.01).toInt());
+      distanceOnly.sort((a, b) {
+        return a[0].compareTo(b[0]);
+      });
+      print('sorted');
+      print(distanceOnly[0]);
+      double max = distanceOnly[0][1];
+      double mean = 0;
+      distanceOnly.forEach((i){
+        mean+=i[1];
+      });
+      mean = mean/distanceOnly.length;
+      print(mean);
+      distanceOnly.forEach((pt) {
+        if (pt[1] > max) {
+          max = pt[1];
+        }
+      });
+      Map<String, List> classified = Map();
+      List<List> normalized = List.generate(distanceOnly.length, (i){
+        return [distanceOnly[i][0],((distanceOnly[i][1]-mean)/(max*0.05)).abs()];
+      });
+      classified["rem"] = distanceOnly.where((pt) {
+        return ((pt[1]-mean / max) > 0.5);
+      }).toList();
+      classified["deep"] = distanceOnly.where((pt) {
+        return ((pt[1] / max) <= 0.5);
+      }).toList();
+      double score =
+          classified["deep"].length * 1.0 + 0.5 * classified["rem"].length;
+
+      graphData = [
+        charts.Series<List, DateTime>(
+          id: 'SleepData',
+          domainFn: (List pt, _) => pt[0],
+          measureFn: (List pt, _) => pt[1],
+          data: normalized,
+        )
+      ];
+      print("graphData ready");
+      results = [
+        ListTile(
+          title: Text("Duration: ${end.difference(start).inMinutes}"),
+          subtitle: Text("Sleep Score: $score"),
+          trailing: Text(
+              "Deep: ${(classified["deep"].length / (distanceOnly.length) * 100).round()}%\nREM: ${(classified["rem"].length / (distanceOnly.length) * 100).round()}%"),
+        ),
+        Padding(
+            padding: EdgeInsets.all(3.0),
+            child: Text(
+              "${start.toIso8601String().substring(0, 10)} ${start.toIso8601String().substring(12, 19)}",
+            )),
+        Container(
+            constraints: BoxConstraints.tight(Size(
+                MediaQuery.of(context).size.width * 0.95,
+                MediaQuery.of(context).size.height * 0.4)),
+            child: charts.TimeSeriesChart(
+              graphData,
+              animate: true,
+            )),
+      ];
+    }
+
+    return Card(
+        margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+        child: Column(
+          children: [
+            [
+              Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: Text("Previous Night's Sleep Statistics",
+                      textAlign: TextAlign.center)),
+              Divider()
+            ],
+            results
+          ].expand((x) => x).toList(),
+        ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      ListTile(
+        leading: Icon(Icons.hotel),
+        title: Text("Begin Sleep Tracking"),
+        trailing: FlatButton(
+          child: Text("START"),
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => SleepWidget()));
+          },
+        ),
+      ),
+      getLastSleepsData(),
+    ]);
+  }
+}
 
 class SleepWidget extends StatefulWidget {
   @override
@@ -15,48 +175,46 @@ class SleepWidget extends StatefulWidget {
 }
 
 class SleepWidgetState extends State<SleepWidget> {
-  final List<List> sensorData = [
-    [DateTime(2018, 9, 19), 5],
-    [DateTime(2018, 9, 20), 15],
-    [DateTime(2018, 9, 21), 5],
-    [DateTime(2018, 9, 22), 25],
-  ];
-  List<List> _accelerometerValuesList = [];
+  List<List> sensorValuesList = [];
+  List<List> derivativesList = [];
+  List<List> timeStampList = [];
   List<double> _gyroscopeValues = [0, 0, 0];
   List<StreamSubscription<dynamic>> _streamSubscriptions =
       <StreamSubscription<dynamic>>[];
   DateTime lastGyro, lastAccel;
-  List<charts.Series<List, DateTime>> data, data1;
-  bool _sleeping = false;
-  bool get sleeping {
-    return _sleeping;
-  }
+  List<charts.Series<List, DateTime>> data;
   DateTime started, ended;
 
-  set sleeping(value) {
-    _sleeping = value;
-    if (value) {
-      startTracking();
-    }
-  }
-  Future<Null> writeData(String data, String meta) async{
+  Future<Null> writeData(String data, String meta) async {
+    print(data);
     final directory = await getApplicationDocumentsDirectory();
     final File file = File("${directory.path}/sleepData.csv");
-    print("saving in ${directory.path}");
     final File fileMeta = File("${directory.path}/sleepMeta.csv");
     fileMeta.writeAsString(meta);
     file.writeAsString(data);
   }
 
-  endTracking(){
+  endTracking() {
     ended = DateTime.now();
-    writeData(csv.ListToCsvConverter().convert(List.generate(_accelerometerValuesList.length, (i){
-      return _accelerometerValuesList.expand((x) => x).toList();
-    })),"");
+    if (sensorValuesList.length > 1) {
+      writeData(
+          csv.ListToCsvConverter()
+              .convert(List.generate(sensorValuesList.length, (i) {
+            return sensorValuesList[i].expand((x) {
+              if (x is DateTime) {
+                return [x];
+              } else {
+                return x;
+              }
+            }).toList();
+          })),
+          csv.ListToCsvConverter().convert([
+            [started.toIso8601String(), ended.toIso8601String()]
+          ]));
+    }
     for (StreamSubscription<dynamic> subscription in _streamSubscriptions) {
       subscription.cancel();
     }
-
   }
 
   startTracking() {
@@ -64,9 +222,9 @@ class SleepWidgetState extends State<SleepWidget> {
     _streamSubscriptions
         .add(accelerometerEvents.listen((AccelerometerEvent event) {
       DateTime now = DateTime.now();
-      if (now.difference(lastAccel).inSeconds > 5) {
+      if (now.difference(lastAccel).inSeconds > 1) {
         lastAccel = now;
-        _accelerometerValuesList.add([
+        sensorValuesList.add([
           now,
           <double>[
             event.x,
@@ -77,6 +235,14 @@ class SleepWidgetState extends State<SleepWidget> {
             _gyroscopeValues[2] * 10
           ],
         ]);
+        if (sensorValuesList.length > 1) {
+          List der = List.generate(sensorValuesList[0][1].length, (i) {
+            return (sensorValuesList[sensorValuesList.length - 1][1][i] -
+                sensorValuesList[sensorValuesList.length - 2][1][i]);
+          });
+          derivativesList
+              .add([sensorValuesList[sensorValuesList.length - 2][0], der]);
+        }
         _gyroscopeValues = [0.0, 0.0, 0.0];
         setState(() {
           refreshData();
@@ -95,9 +261,9 @@ class SleepWidgetState extends State<SleepWidget> {
   @override
   void initState() {
     super.initState();
-    sleeping = false;
     lastGyro = lastAccel = DateTime.now();
     refreshData();
+    startTracking();
   }
 
   refreshData() {
@@ -105,27 +271,10 @@ class SleepWidgetState extends State<SleepWidget> {
       return charts.Series<List, DateTime>(
         id: 'AccelData',
         domainFn: (List pt, _) => pt[0],
-        measureFn: (List pt, _) => pt[1][i],
-        data: _accelerometerValuesList,
+        measureFn: (List pt, _) => min((pt[1][i]).abs() as double, 1.0),
+        data: derivativesList,
       );
     });
-    /* 
-    data..addAll(List.generate(1, (i){
-      return charts.Series<List, DateTime>(
-        id: 'GyroData',
-        domainFn: (List pt, _) => pt[0],
-        measureFn: (List pt, _) => pt[1][i],
-        data: _gyroscopeValues,
-      );
-    })); */
-    /* data = [
-      charts.Series<List, DateTime>(
-        id: 'AccelData',
-        domainFn: (List pt, _) => pt[0],
-        measureFn: (List pt, _) => (pt[1][0] + pt[1][1] + pt[1][2])/3,
-        data: _accelerometerValuesList,
-      ),
-    ]; */
   }
 
   @override
@@ -138,47 +287,31 @@ class SleepWidgetState extends State<SleepWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (sleeping == true) {
-      return Card(
-          child: Column(children: [
-        ListTile(
-          leading: Icon(Icons.wb_sunny),
-          title: Text("End Sleep Tracking"),
-          trailing: FlatButton(
-            child: Text("STOP"),
-            onPressed: () {
-              setState(() {
-                endTracking();
-                sleeping = false;
-              });
-            },
-          ),
-        ),
-        Divider(),
-        Text("Sleep Graph"),
-        Container(
-            constraints: BoxConstraints.tight(Size(
-                MediaQuery.of(context).size.width,
-                MediaQuery.of(context).size.height * 0.7)),
-            child: charts.TimeSeriesChart(
-              data,
-              animate: false,
-            ))
-      ]));
-    } else {
-      return ListTile(
-        leading: Icon(Icons.hotel),
-        title: Text("Begin Sleep Tracking"),
+    return Card(
+        child: Column(children: [
+      ListTile(
+        leading: Icon(Icons.wb_sunny),
+        title: Text("End Sleep Tracking"),
         trailing: FlatButton(
-          child: Text("START"),
+          child: Text("STOP"),
           onPressed: () {
-            print(sleeping);
             setState(() {
-              sleeping = true;
+              endTracking();
+              Navigator.of(context).pop();
             });
           },
         ),
-      );
-    }
+      ),
+      Divider(),
+      Text("Sleep Graph"),
+      Container(
+          constraints: BoxConstraints.tight(Size(
+              MediaQuery.of(context).size.width,
+              MediaQuery.of(context).size.height * 0.7)),
+          child: charts.TimeSeriesChart(
+            data,
+            animate: false,
+          ))
+    ]));
   }
 }
