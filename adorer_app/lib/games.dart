@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'game1.dart';
+import 'game2.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -17,6 +18,12 @@ class MainScreenState extends State<MainScreen> {
             title: Text("Game1"),
             onTap: (){
               Navigator.push(context, MaterialPageRoute(builder: (context) =>Game1()));
+            },
+          ),
+          ListTile(
+            title: Text("Game2"),
+            onTap: (){
+              Navigator.push(context, MaterialPageRoute(builder: (context) =>Game2()));
             },
           )
         ],

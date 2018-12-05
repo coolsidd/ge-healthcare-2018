@@ -69,7 +69,7 @@ class SleepScreenState extends State<SleepScreen> {
       distanceOnly.sort((a, b) {
         return b[1].compareTo(a[1]);
       });
-      distanceOnly.removeRange(0, (distanceOnly.length * 0.01).toInt());
+      distanceOnly.removeRange(0, (distanceOnly.length * 0.05).toInt());
       distanceOnly.sort((a, b) {
         return a[0].compareTo(b[0]);
       });
@@ -89,32 +89,44 @@ class SleepScreenState extends State<SleepScreen> {
       });
       Map<String, List> classified = Map();
       List<List> normalized = List.generate(distanceOnly.length, (i){
-        return [distanceOnly[i][0],((distanceOnly[i][1]-mean)/(max*0.05)).abs()];
+        return [distanceOnly[i][0],((distanceOnly[i][1]-mean)/(max)).abs()];
       });
-      classified["rem"] = distanceOnly.where((pt) {
-        return ((pt[1]-mean / max) > 0.5);
+      classified["rem"] = normalized.where((pt) {
+        return (pt[1] > 0.5);
       }).toList();
       classified["deep"] = distanceOnly.where((pt) {
-        return ((pt[1] / max) <= 0.5);
+        return (pt[1] <= 0.5);
       }).toList();
       double score =
           classified["deep"].length * 1.0 + 0.5 * classified["rem"].length;
-
       graphData = [
         charts.Series<List, DateTime>(
           id: 'SleepData',
           domainFn: (List pt, _) => pt[0],
           measureFn: (List pt, _) => pt[1],
           data: normalized,
+        ),
+        charts.Series<List, DateTime>(
+          id: 'SleepData',
+          domainFn: (List pt, _) => pt[0],
+          measureFn: (List pt, _) => mean,
+          data: classified["deep"],
+        ),
+        charts.Series<List, DateTime>(
+          id: 'SleepData',
+          domainFn: (List pt, _) => pt[0],
+          measureFn: (List pt, _) => mean,
+          data: classified["rem"],
         )
       ];
+      double deep = classified["deep"].length / (classified["rem"].length + classified["deep"].length);
       print("graphData ready");
       results = [
         ListTile(
-          title: Text("Duration: ${end.difference(start).inMinutes}"),
+          title: Text("Duration: ${end.difference(start).inMinutes} minutes"),
           subtitle: Text("Sleep Score: $score"),
           trailing: Text(
-              "Deep: ${(classified["deep"].length / (distanceOnly.length) * 100).round()}%\nREM: ${(classified["rem"].length / (distanceOnly.length) * 100).round()}%"),
+              "Deep: ${(deep*100).round()}%\nREM: ${((1-deep)*100).round()}%"),
         ),
         Padding(
             padding: EdgeInsets.all(3.0),
@@ -197,10 +209,51 @@ class SleepWidgetState extends State<SleepWidget> {
   endTracking() {
     ended = DateTime.now();
     if (sensorValuesList.length > 1) {
+      List<List> distanceOnly = List.generate(derivativesList.length, (i) {
+        return [
+          derivativesList[i][0],
+          (derivativesList[i][1]).reduce((a, b) {
+            return a.abs() + b.abs();
+          })
+        ];
+      });
+      print(distanceOnly);
+      print("Sorting");
+      distanceOnly.sort((a, b) {
+        return b[1].compareTo(a[1]);
+      });
+      distanceOnly.removeRange(0, (distanceOnly.length * 0.01).toInt());
+      distanceOnly.sort((a, b) {
+        return a[0].compareTo(b[0]);
+      });
+      print('sorted');
+      print(distanceOnly[0]);
+      double max = distanceOnly[0][1];
+      double mean = 0;
+      distanceOnly.forEach((i){
+        mean+=i[1];
+      });
+      mean = mean/distanceOnly.length;
+      print(mean);
+      distanceOnly.forEach((pt) {
+        if (pt[1] > max) {
+          max = pt[1];
+        }
+      });
+      Map<String, List> classified = Map();
+      classified["rem"] = distanceOnly.where((pt) {
+        return ((pt[1]-mean / max) > 0.5);
+      }).toList();
+      classified["deep"] = distanceOnly.where((pt) {
+        return ((pt[1] / max) <= 0.5);
+      }).toList();
+      double score =
+          classified["deep"].length * 1.0 + 0.5 * classified["rem"].length;
+      print("sleep classified");
       writeData(
           csv.ListToCsvConverter()
-              .convert(List.generate(sensorValuesList.length, (i) {
-            return sensorValuesList[i].expand((x) {
+              .convert(List.generate(derivativesList.length, (i) {
+            return derivativesList[i].expand((x) {
               if (x is DateTime) {
                 return [x];
               } else {
@@ -209,7 +262,7 @@ class SleepWidgetState extends State<SleepWidget> {
             }).toList();
           })),
           csv.ListToCsvConverter().convert([
-            [started.toIso8601String(), ended.toIso8601String()]
+            [started.toIso8601String(), ended.toIso8601String(), classified["deep"], classified["rem"], score]
           ]));
     }
     for (StreamSubscription<dynamic> subscription in _streamSubscriptions) {

@@ -4,6 +4,7 @@ import 'graphs.dart' as Graphs;
 import 'sleep.dart' as Sleep;
 import 'activities.dart' as Activities;
 import 'emotion.dart' as Emotion;
+import 'aboutUs.dart' as AboutUs;
 
 void main() {
   runApp(MaterialApp(
@@ -21,16 +22,26 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  final drawerItems = [
+  final drawerItemsBegin = [
     DrawerItem("Home", Icons.home, true, Text("Screen 1")),
-    DrawerItem("Games", Icons.games, true, Text("Screen 2"), ontapped: (){print("Well");},drawerItemWidget:()=> Games.MainScreen()),
-    DrawerItem("Graphs", Icons.insert_chart, true, Text("Graphs"),drawerItemWidget:()=> Graphs.GraphsWidget()),
-    DrawerItem("Sleep", Icons.hotel, true, Text("Sleep"),drawerItemWidget: ()=> Sleep.SleepScreen()),
-    DrawerItem("Activities", Icons.list, true, Text("My Activities"),drawerItemWidget: ()=> Activities.MainScreen()),
-    DrawerItem("Emotion Detect", Icons.list, true, Text("Detecting..."),drawerItemWidget: ()=> Emotion.EmotionWidget()),
+    DrawerItem("Games", Icons.games, true, Text("Screen 2"),
+        drawerItemWidget: () => Games.MainScreen()),
+    DrawerItem("Graphs", Icons.insert_chart, true, Text("Graphs"),
+        drawerItemWidget: () => Graphs.GraphsWidget()),
+    DrawerItem("Sleep", Icons.hotel, true, Text("Sleep"),
+        drawerItemWidget: () => Sleep.SleepScreen()),
+    DrawerItem("Activities", Icons.list, true, Text("My Activities"),
+        drawerItemWidget: () => Activities.MainScreen()),
+    DrawerItem("Emotion Detect", Icons.list, true, Text("Detecting..."),
+        drawerItemWidget: () => Emotion.EmotionWidget()),
+    DrawerItem("Divider1", null, false, null, isDivider: true),
+    DrawerItem("About Us", Icons.info, true, Text("About Us"),
+        drawerItemWidget: () => AboutUs.AboutUsWidget()),
   ];
   @override
-  _MyHomePageState createState() => new _MyHomePageState();
+  _MyHomePageState createState() {
+    return new _MyHomePageState();
+  }
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -43,14 +54,20 @@ class _MyHomePageState extends State<MyHomePage> {
       Navigator.of(context).pop();
     });
   }
-  List<Widget> generateDrawerItems(List <DrawerItem> drawerItemList){
-    List<Widget> drawerOptions = <Widget> [];
-    for (var i = 0; i < widget.drawerItems.length; i++) {
-      var dItem = widget.drawerItems[i];
+
+  List<Widget> generateDrawerItems(List<DrawerItem> drawerItemList,
+      {int startIndex = 0}) {
+    List<Widget> drawerOptions = <Widget>[];
+    for (var i = 0; i < drawerItemList.length; i++) {
+      var dItem = drawerItemList[i];
+      if(dItem.isDivider){
+        drawerOptions.add(Divider());
+        continue;
+      }
       drawerOptions.add(ListTile(
         leading: Icon(dItem.icon),
         title: Text(dItem.title),
-        selected: i == selectedDrawerIndex,
+        selected: (i + startIndex) == selectedDrawerIndex,
         onTap: () {
           dItem.ontapped();
           if (dItem.switchOnTap) {
@@ -64,15 +81,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> drawerOptions = <Widget>[];
-    drawerOptions = generateDrawerItems(widget.drawerItems);
+    List<Widget> drawerOptionsBegin = <Widget>[];
+    drawerOptionsBegin = generateDrawerItems(widget.drawerItemsBegin);
     return Scaffold(
-      appBar: widget.drawerItems[_selectedDrawerIndex].appBarEnabled
+      appBar: widget.drawerItemsBegin[_selectedDrawerIndex].appBarEnabled
           ? AppBar(
-              title: widget.drawerItems[_selectedDrawerIndex].appBarTitle,
+              title: widget.drawerItemsBegin[_selectedDrawerIndex].appBarTitle,
             )
           : null,
-      body: widget.drawerItems[_selectedDrawerIndex].drawerItemWidget(),
+      body: widget.drawerItemsBegin[_selectedDrawerIndex].drawerItemWidget(),
       drawer: Drawer(
           child: ListView(
         children: <Widget>[
@@ -81,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [Text("Drawer Header")])),
           Column(
-            children: [drawerOptions,[Divider()],].expand((x) =>x).toList(),
+            children: drawerOptionsBegin,
           ),
         ],
       )),
@@ -97,18 +114,22 @@ class DrawerItem {
   Function() drawerItemWidget;
   Function() ontapped;
   bool switchOnTap;
+  bool isDivider;
   DrawerItem(this.title, this.icon, this.appBarEnabled, this.appBarTitle,
-      {this.ontapped, this.switchOnTap, this.drawerItemWidget}) {
+      {this.ontapped, this.switchOnTap, this.drawerItemWidget, this.isDivider}) {
     if (this.ontapped == null) {
-      this.ontapped =() {
+      this.ontapped = () {
         return null;
       };
+    }
+    if(this.isDivider== null){
+      this.isDivider =false;
     }
     if (this.switchOnTap == null) {
       switchOnTap = true;
     }
-    if(this.drawerItemWidget == null){
-      drawerItemWidget = (){
+    if (this.drawerItemWidget == null) {
+      drawerItemWidget = () {
         return Container();
       };
     }
