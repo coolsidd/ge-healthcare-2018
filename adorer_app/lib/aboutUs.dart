@@ -20,16 +20,10 @@ class AboutUsWidget extends StatelessWidget {
             Container(
               child: Column(
                 children: [
-                  InkWell(
-                    onTap: () {
-                    },
-                    splashColor: Colors.pink,
-                    child: CircleAvatar(                      
-                      child: Image(image: AssetImage("assets/images/logo.png")),
-                      backgroundColor:
-                          Theme.of(context).scaffoldBackgroundColor,
-                      radius: 80.0,
-                    ),
+                  CircleAvatar(
+                    child: Image(image: AssetImage("assets/images/logo.png")),
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    radius: 80.0,
                   ),
                   Container(
                     child: Center(

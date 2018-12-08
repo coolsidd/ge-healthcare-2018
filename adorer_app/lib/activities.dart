@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'package:csv/csv.dart';
+import 'dart:convert';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -8,9 +12,174 @@ class MainScreen extends StatefulWidget {
 }
 
 class MainScreenState extends State<MainScreen> {
-  List<Activity> sampleActivities = [
-    Activity("Chess", "Played a game of chess", []),
-  ];
+  List<Activity> sampleActivities = [];
+  @override
+  void initState() {
+    super.initState();
+    readData() async {
+      final directory = await getApplicationDocumentsDirectory();
+      if (FileSystemEntity.typeSync("${directory.path}/activitiesData.csv") ==
+          FileSystemEntityType.notFound) {
+        return;
+      }
+      final File file = File("${directory.path}/activitiesData.csv");
+      String data = await file.readAsString();
+      List<List> dataList = CsvToListConverter().convert(data);
+      print(data);
+      print(json.decode(dataList[0][2]).cast().runtimeType);
+      List<Activity> sampleActivitiesTemp =
+          List<Activity>.generate(dataList.length, (i) {
+        return Activity(
+          dataList[i][0],
+          dataList[i][1],
+          json.decode(dataList[i][2]),
+        );
+      });
+      
+      sampleActivities.addAll(sampleActivitiesTemp);
+      print("Read success");
+      print("${sampleActivities[0].data}");
+      setState(() {});
+    }
+
+    readData();
+  }
+
+  Future<bool> autoSaveData() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final File file = File("${directory.path}/activitiesData.csv");
+    await file.writeAsString("");
+    print(sampleActivities.length); // empty the previous contents
+    Map<String, List> myMap = {};
+    sampleActivities.forEach((act) {
+      myMap[act.name] = [act.name, act.description, act.data];
+    });
+
+    sampleActivities.forEach((act) async {
+      if (act.data.isEmpty) {
+        return;
+      }
+      await file.writeAsString(
+          ListToCsvConverter().convert(
+                [
+                  [act.name, act.description, json.encode(act.data)]
+                ],
+              ) +
+              "\n",
+          mode: FileMode.append);
+    });
+    print("Saved successfully");
+    return true;
+  }
+
+  Future<void> launchEditActivityDialog(Activity activity) async {
+    String name, description;
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Add new activity'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text("Name: "),
+                TextField(
+                  maxLength: 20,
+                  controller: TextEditingController(text: activity.name),
+                  onChanged: (myStr) {
+                    name = myStr;
+                  },
+                ),
+                Text("Description: "),
+                TextField(
+                  controller: TextEditingController(text: activity.description),
+                  maxLength: 255,
+                  onChanged: (myStr) {
+                    description = myStr;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('CANCEL'),
+              onPressed: () async {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text('ADD'),
+              onPressed: () async {
+                if (name != null && description != null) {
+                  sampleActivities.remove(activity);
+                  sampleActivities
+                      .add(Activity(name, description, activity.data));
+                  setState(() {});
+                  await autoSaveData();
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> launchAddActivityDialog() async {
+    String name, description;
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Add new activity'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text("Name: "),
+                TextField(
+                  maxLength: 20,
+                  onChanged: (myStr) {
+                    name = myStr;
+                  },
+                ),
+                Text("Description: "),
+                TextField(
+                  maxLength: 255,
+                  onChanged: (myStr) {
+                    description = myStr;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('CANCEL'),
+              onPressed: () async {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text('ADD'),
+              onPressed: () async {
+                if (name != null && description != null) {
+                  sampleActivities.add(Activity(name, description, []));
+                  setState(() {});
+                  await autoSaveData();
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> launchActivityDialog(Activity activity) async {
     DateTime dateAdded = DateTime.now();
     TimeOfDay timeBegan, timeEnded;
@@ -91,10 +260,6 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
-  Future<bool> autoSaveData() {
-    return Future.delayed(Duration(seconds: 3), () => true);
-  }
-
   Widget getActivityWidget(Activity activity) {
     return ListTile(
       leading: Icon(Icons.check),
@@ -106,21 +271,49 @@ class MainScreenState extends State<MainScreen> {
           launchActivityDialog(activity);
         },
       ),
+      onLongPress: () {
+        launchEditActivityDialog(activity);
+      },
       onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    ActivityScreen(activity)));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => ActivityScreen(activity)));
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: <Widget>[getActivityWidget(sampleActivities[0])],
-    );
+    if (sampleActivities.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: Text("My Activities")),
+        drawer: Scaffold.of(context).widget.drawer,
+        body: Center(
+            child: Text("Add new activities",
+                style: TextStyle(fontWeight: FontWeight.w300))),
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () {
+            launchAddActivityDialog();
+          },
+        ),
+      );
+    } else {
+      autoSaveData();
+      return Scaffold(
+          appBar: AppBar(title: Text("My Activities")),
+          drawer: Scaffold.of(context).widget.drawer,
+          floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.add),
+            onPressed: () {
+              launchAddActivityDialog();
+            },
+          ),
+          body: ListView(
+            children: List.generate(sampleActivities.length, (i) {
+              return getActivityWidget(sampleActivities[i]);
+            }),
+          ));
+    }
   }
 }
 

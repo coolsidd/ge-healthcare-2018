@@ -53,7 +53,7 @@ class CollapsingListState extends State<CollapsingList> {
     return SliverPersistentHeader(
       pinned: true,
       delegate: _SliverAppBarDelegate(
-        minHeight: 80.0,
+        minHeight: 40.0,
         maxHeight: 200.0,
         child: Stack(
           fit: StackFit.expand,
@@ -75,15 +75,17 @@ class CollapsingListState extends State<CollapsingList> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.end, children: [
-              Padding(
+              Container(
+                constraints: BoxConstraints(minHeight: 40,maxHeight: 200),
                   padding: EdgeInsets.only(bottom: 5.0,left: 10.0),
                   child: Text(
                     headerText,
                     textAlign: TextAlign.left,
+                    overflow: TextOverflow.clip,
                     style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: Colors.grey[50],
-                        fontSize: 23),
+                        fontSize: 20),
                   ))
             ]),
           ],

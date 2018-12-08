@@ -28,6 +28,7 @@ dependencies:
   tflite: ^0.0.4
   camera: ^0.2.6
   url_launcher: ^4.0.2
+  flutter_local_notifications: ^0.4.2+1
 
 dev_dependencies:
   flutter_test:

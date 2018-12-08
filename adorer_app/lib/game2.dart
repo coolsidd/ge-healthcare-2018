@@ -142,7 +142,7 @@ class GameDayState extends State<GameDay> {
 
   void checkAnswer(int i) {
     if (i == name.indexOf(imgName)) {
-      widget.callbackToNextLevel(1 / tries, watch.elapsed.inMilliseconds);
+      widget.callbackToNextLevel(1.0 / tries, watch.elapsed.inMilliseconds);
     } else {
       tries++;
       Vibrate.feedback(FeedbackType.warning);

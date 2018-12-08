@@ -77,10 +77,10 @@ class SleepScreenState extends State<SleepScreen> {
       print(distanceOnly[0]);
       double max = distanceOnly[0][1];
       double mean = 0;
-      distanceOnly.forEach((i){
-        mean+=i[1];
+      distanceOnly.forEach((i) {
+        mean += i[1];
       });
-      mean = mean/distanceOnly.length;
+      mean = mean / distanceOnly.length;
       print(mean);
       distanceOnly.forEach((pt) {
         if (pt[1] > max) {
@@ -88,8 +88,11 @@ class SleepScreenState extends State<SleepScreen> {
         }
       });
       Map<String, List> classified = Map();
-      List<List> normalized = List.generate(distanceOnly.length, (i){
-        return [distanceOnly[i][0],((distanceOnly[i][1]-mean)/(max)).abs()];
+      List<List> normalized = List.generate(distanceOnly.length, (i) {
+        return [
+          distanceOnly[i][0],
+          ((distanceOnly[i][1] - mean) / (max)).abs()
+        ];
       });
       classified["rem"] = normalized.where((pt) {
         return (pt[1] > 0.5);
@@ -119,14 +122,15 @@ class SleepScreenState extends State<SleepScreen> {
           data: classified["rem"],
         )
       ];
-      double deep = classified["deep"].length / (classified["rem"].length + classified["deep"].length);
+      double deep = classified["deep"].length /
+          (classified["rem"].length + classified["deep"].length);
       print("graphData ready");
       results = [
         ListTile(
           title: Text("Duration: ${end.difference(start).inMinutes} minutes"),
           subtitle: Text("Sleep Score: $score"),
           trailing: Text(
-              "Deep: ${(deep*100).round()}%\nREM: ${((1-deep)*100).round()}%"),
+              "Deep: ${(deep * 100).round()}%\nREM: ${((1 - deep) * 100).round()}%"),
         ),
         Padding(
             padding: EdgeInsets.all(3.0),
@@ -230,10 +234,10 @@ class SleepWidgetState extends State<SleepWidget> {
       print(distanceOnly[0]);
       double max = distanceOnly[0][1];
       double mean = 0;
-      distanceOnly.forEach((i){
-        mean+=i[1];
+      distanceOnly.forEach((i) {
+        mean += i[1];
       });
-      mean = mean/distanceOnly.length;
+      mean = mean / distanceOnly.length;
       print(mean);
       distanceOnly.forEach((pt) {
         if (pt[1] > max) {
@@ -242,7 +246,7 @@ class SleepWidgetState extends State<SleepWidget> {
       });
       Map<String, List> classified = Map();
       classified["rem"] = distanceOnly.where((pt) {
-        return ((pt[1]-mean / max) > 0.5);
+        return ((pt[1] - mean / max) > 0.5);
       }).toList();
       classified["deep"] = distanceOnly.where((pt) {
         return ((pt[1] / max) <= 0.5);
@@ -262,7 +266,13 @@ class SleepWidgetState extends State<SleepWidget> {
             }).toList();
           })),
           csv.ListToCsvConverter().convert([
-            [started.toIso8601String(), ended.toIso8601String(), classified["deep"], classified["rem"], score]
+            [
+              started.toIso8601String(),
+              ended.toIso8601String(),
+              classified["deep"],
+              classified["rem"],
+              score
+            ]
           ]));
     }
     for (StreamSubscription<dynamic> subscription in _streamSubscriptions) {
@@ -340,31 +350,33 @@ class SleepWidgetState extends State<SleepWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-        child: Column(children: [
-      ListTile(
-        leading: Icon(Icons.wb_sunny),
-        title: Text("End Sleep Tracking"),
-        trailing: FlatButton(
-          child: Text("STOP"),
-          onPressed: () {
-            setState(() {
-              endTracking();
-              Navigator.of(context).pop();
-            });
-          },
-        ),
-      ),
-      Divider(),
-      Text("Sleep Graph"),
-      Container(
-          constraints: BoxConstraints.tight(Size(
-              MediaQuery.of(context).size.width,
-              MediaQuery.of(context).size.height * 0.7)),
-          child: charts.TimeSeriesChart(
-            data,
-            animate: false,
-          ))
-    ]));
+    return Scaffold(
+        appBar: null,
+        body: Card(
+            child: Column(children: [
+          ListTile(
+            leading: Icon(Icons.wb_sunny),
+            title: Text("End Sleep Tracking"),
+            trailing: FlatButton(
+              child: Text("STOP"),
+              onPressed: () {
+                setState(() {
+                  endTracking();
+                  Navigator.of(context).pop();
+                });
+              },
+            ),
+          ),
+          Divider(),
+          Text("Sleep Graph"),
+          Container(
+              constraints: BoxConstraints.tight(Size(
+                  MediaQuery.of(context).size.width,
+                  MediaQuery.of(context).size.height * 0.7)),
+              child: charts.TimeSeriesChart(
+                data,
+                animate: false,
+              ))
+        ])));
   }
 }

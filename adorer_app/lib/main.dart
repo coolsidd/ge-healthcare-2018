@@ -5,12 +5,28 @@ import 'sleep.dart' as Sleep;
 import 'activities.dart' as Activities;
 import 'emotion.dart' as Emotion;
 import 'aboutUs.dart' as AboutUs;
+import 'colors.dart';
+import 'advice.dart' as Advice;
+import 'emergencyCall.dart' as EmergencyCall;
+
+final ThemeData _kShrineTheme = _buildShrineTheme();
+
+ThemeData _buildShrineTheme() {
+  final ThemeData base = ThemeData.light();
+  return base.copyWith(
+    accentColor: secondaryMain,
+    primaryColor: primaryMain,
+    buttonColor: secondaryDark,
+    textSelectionColor: Colors.lightBlue,
+  );
+}
 
 void main() {
   runApp(MaterialApp(
     title: "Adorer",
     debugShowCheckedModeBanner: false,
     home: new MyHomePage(),
+    theme: _kShrineTheme,
   ));
 }
 
@@ -22,22 +38,6 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  final drawerItemsBegin = [
-    DrawerItem("Home", Icons.home, true, Text("Screen 1")),
-    DrawerItem("Games", Icons.games, true, Text("Screen 2"),
-        drawerItemWidget: () => Games.MainScreen()),
-    DrawerItem("Graphs", Icons.insert_chart, true, Text("Graphs"),
-        drawerItemWidget: () => Graphs.GraphsWidget()),
-    DrawerItem("Sleep", Icons.hotel, true, Text("Sleep"),
-        drawerItemWidget: () => Sleep.SleepScreen()),
-    DrawerItem("Activities", Icons.list, true, Text("My Activities"),
-        drawerItemWidget: () => Activities.MainScreen()),
-    DrawerItem("Emotion Detect", Icons.list, true, Text("Detecting..."),
-        drawerItemWidget: () => Emotion.EmotionWidget()),
-    DrawerItem("Divider1", null, false, null, isDivider: true),
-    DrawerItem("About Us", Icons.info, true, Text("About Us"),
-        drawerItemWidget: () => AboutUs.AboutUsWidget()),
-  ];
   @override
   _MyHomePageState createState() {
     return new _MyHomePageState();
@@ -45,6 +45,28 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<DrawerItem> drawerItemsBegin = [
+    DrawerItem("Home", Icons.home, true, Text("Screen 1")),
+    DrawerItem("Games", Icons.games, true, Text("Screen 2"),
+        drawerItemWidget: () => Games.MainScreen()),
+    DrawerItem("Graphs", Icons.insert_chart, true, Text("Graphs"),
+        drawerItemWidget: () => Graphs.GraphsWidget()),
+    DrawerItem("Sleep", Icons.hotel, true, Text("Sleep"),
+        drawerItemWidget: () => Sleep.SleepScreen()),
+    DrawerItem("Activities", Icons.list, false, Text("My Activities"),
+        drawerItemWidget: () => Activities.MainScreen()),
+    DrawerItem("Emotion Detect", Icons.list, true, Text("Detecting..."),
+        drawerItemWidget: () => Emotion.EmotionWidget()),
+    DrawerItem("Divider1", null, false, null, isDivider: true),
+    DrawerItem(
+        "Advice For Parents", Icons.help, false, Text("Advice for parents"),
+        drawerItemWidget: () => Advice.AdviceWidget()),
+    DrawerItem(
+        "Emergency Contact", Icons.call, false, Text("Advice for parents"),
+        drawerItemWidget: () => EmergencyCall.EmergencyCallWidget()),
+    DrawerItem("About Us", Icons.info, true, Text("About Us"),
+        drawerItemWidget: () => AboutUs.AboutUsWidget()),
+  ];
   int _selectedDrawerIndex = 0;
   int get selectedDrawerIndex => _selectedDrawerIndex;
   set selectedDrawerIndex(int value) {
@@ -60,7 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
     List<Widget> drawerOptions = <Widget>[];
     for (var i = 0; i < drawerItemList.length; i++) {
       var dItem = drawerItemList[i];
-      if(dItem.isDivider){
+      if (dItem.isDivider) {
         drawerOptions.add(Divider());
         continue;
       }
@@ -82,14 +104,14 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     List<Widget> drawerOptionsBegin = <Widget>[];
-    drawerOptionsBegin = generateDrawerItems(widget.drawerItemsBegin);
+    drawerOptionsBegin = generateDrawerItems(drawerItemsBegin);
     return Scaffold(
-      appBar: widget.drawerItemsBegin[_selectedDrawerIndex].appBarEnabled
+      appBar: drawerItemsBegin[_selectedDrawerIndex].appBarEnabled
           ? AppBar(
-              title: widget.drawerItemsBegin[_selectedDrawerIndex].appBarTitle,
+              title: drawerItemsBegin[_selectedDrawerIndex].appBarTitle,
             )
           : null,
-      body: widget.drawerItemsBegin[_selectedDrawerIndex].drawerItemWidget(),
+      body: drawerItemsBegin[_selectedDrawerIndex].drawerItemWidget(),
       drawer: Drawer(
           child: ListView(
         children: <Widget>[
@@ -116,14 +138,17 @@ class DrawerItem {
   bool switchOnTap;
   bool isDivider;
   DrawerItem(this.title, this.icon, this.appBarEnabled, this.appBarTitle,
-      {this.ontapped, this.switchOnTap, this.drawerItemWidget, this.isDivider}) {
+      {this.ontapped,
+      this.switchOnTap,
+      this.drawerItemWidget,
+      this.isDivider}) {
     if (this.ontapped == null) {
       this.ontapped = () {
         return null;
       };
     }
-    if(this.isDivider== null){
-      this.isDivider =false;
+    if (this.isDivider == null) {
+      this.isDivider = false;
     }
     if (this.switchOnTap == null) {
       switchOnTap = true;
