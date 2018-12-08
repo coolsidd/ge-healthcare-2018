@@ -59,6 +59,14 @@ flutter:
       - assets/images/misc/Cognitive.jpg
       - assets/images/misc/Heart.jpg
       - assets/images/misc/Social.jpg
+      - assets/images/misc/autism1.png
+      - assets/images/misc/autism2.jpg
+      - assets/images/misc/autism3.jpg
+      - assets/images/misc/autism4.jpg
+      - assets/images/misc/autism5.jpg
+      - assets/images/misc/autism6.jpg
+      - assets/images/misc/autism7.jpg
+      - assets/images/misc/autism8.jpg
 
   # To add assets to your application, add an assets section, like this:
   # assets:
