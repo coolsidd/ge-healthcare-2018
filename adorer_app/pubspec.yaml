@@ -28,7 +28,7 @@ dependencies:
   tflite: ^0.0.4
   camera: ^0.2.6
   url_launcher: ^4.0.2
-  
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -39,7 +39,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
-  
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -59,7 +59,14 @@ flutter:
       - assets/images/misc/Cognitive.jpg
       - assets/images/misc/Heart.jpg
       - assets/images/misc/Social.jpg
-      - assets/images/misc/Cognitive.jpg
+      - assets/images/misc/autism1.png
+      - assets/images/misc/autism2.jpg
+      - assets/images/misc/autism3.jpg
+      - assets/images/misc/autism4.jpg
+      - assets/images/misc/autism5.jpg
+      - assets/images/misc/autism6.jpg
+      - assets/images/misc/autism7.jpg
+      - assets/images/misc/autism8.jpg
 
   # To add assets to your application, add an assets section, like this:
   # assets:
