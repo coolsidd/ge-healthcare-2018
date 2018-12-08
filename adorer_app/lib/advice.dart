@@ -114,7 +114,7 @@ class CollapsingListState extends State<CollapsingList> {
     return  CustomScrollView(
       slivers: <Widget>[
         makeHeader(
-            "Be Consistent", Colors.amber, 'assets/images/misc/Heart.jpg'),
+            "Be Consistent", Colors.amber, 'assets/images/misc/autism1.png'),
         SliverList(
           delegate: SliverChildListDelegate([
             Container(
@@ -124,7 +124,7 @@ class CollapsingListState extends State<CollapsingList> {
           ]),
         ),
         makeHeader(
-            "Stick to a schedule", Colors.blue, 'assets/images/misc/Heart.jpg'),
+            "Stick to a schedule", Colors.blue, 'assets/images/misc/autism2.jpg'),
         SliverList(
           delegate: SliverChildListDelegate([
             Container(
@@ -134,7 +134,7 @@ class CollapsingListState extends State<CollapsingList> {
           ]),
         ),
         makeHeader(
-            "Be Consistent", Colors.amber, 'assets/images/misc/Heart.jpg'),
+            "Reward good behavior", Colors.amber, 'assets/images/misc/autism3.jpg'),
         SliverList(
           delegate: SliverChildListDelegate([
             Container(
@@ -144,7 +144,7 @@ class CollapsingListState extends State<CollapsingList> {
           ]),
         ),
         makeHeader(
-            "Be Consistent", Colors.amber, 'assets/images/misc/Heart.jpg'),
+            "Create a home safety zone", Colors.amber, 'assets/images/misc/autism4.jpg'),
         SliverList(
           delegate: SliverChildListDelegate([
             Container(
@@ -154,7 +154,37 @@ class CollapsingListState extends State<CollapsingList> {
           ]),
         ),
         makeHeader(
-            "Be Consistent", Colors.amber, 'assets/images/misc/Heart.jpg'),
+            "Look for nonverbal cues", Colors.amber, 'assets/images/misc/autism5.jpg'),
+        SliverList(
+          delegate: SliverChildListDelegate([
+            Container(
+              padding: EdgeInsets.all(15.0),
+              child: Text(consistentText),
+            )
+          ]),
+        ),
+        makeHeader(
+            "Figure out the motivation behind the tantrum", Colors.amber, 'assets/images/misc/autism6.jpg'),
+        SliverList(
+          delegate: SliverChildListDelegate([
+            Container(
+              padding: EdgeInsets.all(15.0),
+              child: Text(consistentText),
+            )
+          ]),
+        ),
+        makeHeader(
+            "Make time for fun", Colors.amber, 'assets/images/misc/autism7.jpg'),
+        SliverList(
+          delegate: SliverChildListDelegate([
+            Container(
+              padding: EdgeInsets.all(15.0),
+              child: Text(consistentText),
+            )
+          ]),
+        ),
+        makeHeader(
+            "Pay attention to your child’s sensory sensitivities", Colors.amber, 'assets/images/misc/autism8.jpg'),
         SliverList(
           delegate: SliverChildListDelegate([
             Container(
