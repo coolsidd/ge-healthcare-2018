@@ -8,6 +8,7 @@ class AdviceWidget extends StatelessWidget {
       appBar: AppBar(
         title: Text("Advice For Parents"),
       ),
+      
       body: CollapsingList(),
     );
   }
@@ -51,9 +52,9 @@ class CollapsingListState extends State<CollapsingList> {
   SliverPersistentHeader makeHeader(
       String headerText, Color headerColor, String imagePath) {
     return SliverPersistentHeader(
-      pinned: true,
+      pinned: false,
       delegate: _SliverAppBarDelegate(
-        minHeight: 40.0,
+        minHeight: 50.0,
         maxHeight: 200.0,
         child: Stack(
           fit: StackFit.expand,
@@ -68,7 +69,7 @@ class CollapsingListState extends State<CollapsingList> {
                   begin: FractionalOffset(0.0, 0.0),
                   end: FractionalOffset(0.0, 1.0),
                   stops: [0.0,1.0],
-                  colors: [Color(0x00000000), Color(0x70000000)],
+                  colors: [Color(0x00000000), Color(0x80000000)],
                 ),
               ),
             ),
@@ -76,10 +77,11 @@ class CollapsingListState extends State<CollapsingList> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.end, children: [
               Container(
-                constraints: BoxConstraints(minHeight: 40,maxHeight: 200),
+                constraints: BoxConstraints(minHeight: 50,maxHeight: 200),
                   padding: EdgeInsets.only(bottom: 5.0,left: 10.0),
                   child: Text(
                     headerText,
+                    softWrap: false,
                     textAlign: TextAlign.left,
                     overflow: TextOverflow.clip,
                     style: TextStyle(
@@ -131,7 +133,7 @@ class CollapsingListState extends State<CollapsingList> {
           delegate: SliverChildListDelegate([
             Container(
               padding: EdgeInsets.all(15.0),
-              child: Text(consistentText),
+              child: Text(scheduleText),
             )
           ]),
         ),
@@ -141,7 +143,7 @@ class CollapsingListState extends State<CollapsingList> {
           delegate: SliverChildListDelegate([
             Container(
               padding: EdgeInsets.all(15.0),
-              child: Text(consistentText),
+              child: Text(rewardText),
             )
           ]),
         ),
@@ -151,7 +153,7 @@ class CollapsingListState extends State<CollapsingList> {
           delegate: SliverChildListDelegate([
             Container(
               padding: EdgeInsets.all(15.0),
-              child: Text(consistentText),
+              child: Text(safetyText),
             )
           ]),
         ),
@@ -161,7 +163,7 @@ class CollapsingListState extends State<CollapsingList> {
           delegate: SliverChildListDelegate([
             Container(
               padding: EdgeInsets.all(15.0),
-              child: Text(consistentText),
+              child: Text(nonverbalText),
             )
           ]),
         ),
@@ -171,7 +173,7 @@ class CollapsingListState extends State<CollapsingList> {
           delegate: SliverChildListDelegate([
             Container(
               padding: EdgeInsets.all(15.0),
-              child: Text(consistentText),
+              child: Text(tantrumsText),
             )
           ]),
         ),
@@ -181,7 +183,7 @@ class CollapsingListState extends State<CollapsingList> {
           delegate: SliverChildListDelegate([
             Container(
               padding: EdgeInsets.all(15.0),
-              child: Text(consistentText),
+              child: Text(funText),
             )
           ]),
         ),
@@ -191,7 +193,7 @@ class CollapsingListState extends State<CollapsingList> {
           delegate: SliverChildListDelegate([
             Container(
               padding: EdgeInsets.all(15.0),
-              child: Text(consistentText),
+              child: Text(sensoryText),
             )
           ]),
         ),
