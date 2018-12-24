@@ -7,7 +7,7 @@ import 'dart:core';
 import 'dart:math';
 import 'dart:io';
 import 'package:csv/csv.dart' as csv;
-
+import 'main.dart' as main;
 class SleepScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -173,6 +173,7 @@ class SleepScreenState extends State<SleepScreen> {
         trailing: FlatButton(
           child: Text("START"),
           onPressed: () {
+            main.noteTime(main.Screens.sleep);
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => SleepWidget()));
           },

@@ -8,6 +8,11 @@ import 'aboutUs.dart' as AboutUs;
 import 'colors.dart';
 import 'advice.dart' as Advice;
 import 'emergencyCall.dart' as EmergencyCall;
+import 'predictions.dart' as Predictions;
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:csv/csv.dart';
+import 'scheduler.dart' as Schedular;
 
 final ThemeData _kShrineTheme = _buildShrineTheme();
 
@@ -44,11 +49,29 @@ class MyHomePage extends StatefulWidget {
   }
 }
 
+enum Screens { home, games, sleep, medicine }
+void noteTime(Screens screen) async {
+  final directory = await getApplicationDocumentsDirectory();
+  if (true) {
+    final File file = File("${directory.path}/meta.csv");
+    await file.writeAsString(
+        ListToCsvConverter().convert([
+          [screen.toString(), DateTime.now()]
+        ]),
+        mode: FileMode.append);
+  }
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   List<DrawerItem> drawerItemsBegin = [
-    DrawerItem("Home", Icons.home, true, Text("Screen 1")),
-    DrawerItem("Games", Icons.games, true, Text("Screen 2"),
-        drawerItemWidget: () => Games.MainScreen()),
+    DrawerItem("Home", Icons.home, true, Text("Home"), drawerItemWidget: () {
+      noteTime(Screens.home);
+      return Predictions.PredictionsWidget();
+    }),
+    DrawerItem("Games", Icons.games, true, Text("Games"), drawerItemWidget: () {
+      noteTime(Screens.games);
+      return Games.MainScreen();
+    }),
     DrawerItem("Graphs", Icons.insert_chart, true, Text("Graphs"),
         drawerItemWidget: () => Graphs.GraphsWidget()),
     DrawerItem("Sleep", Icons.hotel, true, Text("Sleep"),
@@ -57,6 +80,8 @@ class _MyHomePageState extends State<MyHomePage> {
         drawerItemWidget: () => Activities.MainScreen()),
     DrawerItem("Emotion Detect", Icons.list, true, Text("Detecting..."),
         drawerItemWidget: () => Emotion.EmotionWidget()),
+    DrawerItem("Scheduler", Icons.schedule, true, Text("Scheduler"),
+        drawerItemWidget: () => Schedular.MedicineScheduleWidget()),
     DrawerItem("Divider1", null, false, null, isDivider: true),
     DrawerItem(
         "Advice For Parents", Icons.help, false, Text("Advice for parents"),
