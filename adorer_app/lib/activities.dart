@@ -3,6 +3,33 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:csv/csv.dart';
 import 'dart:convert';
+import 'package:json_annotation/json_annotation.dart';
+
+part "activities.g.dart";
+
+@JsonSerializable(nullable: true)
+class Activity {
+  String name;
+  String description;
+  List<List> data;
+  Activity(this.name, this.description, this.data) {
+    List<String> words = name.split(" ");
+    List<String> capitalized = [];
+    words.forEach((f) {
+      if (f.length > 0) {
+        capitalized.add(f[0].toUpperCase() + f.substring(1));
+      } else {
+        capitalized.add(f);
+      }
+    });
+    this.name = capitalized.reduce((a, b) {
+      return a + b;
+    });
+  }
+  factory Activity.fromJson(Map<String, dynamic> json) =>
+      _$ActivityFromJson(json);
+  Map<String, dynamic> toJson() => _$ActivityToJson(this);
+}
 
 class MainScreen extends StatefulWidget {
   @override
@@ -22,20 +49,16 @@ class MainScreenState extends State<MainScreen> {
           FileSystemEntityType.notFound) {
         return;
       }
+      print("reading");
       final File file = File("${directory.path}/activitiesData.csv");
-      String data = await file.readAsString();
-      List<List> dataList = CsvToListConverter().convert(data);
-      print(data);
-      print(json.decode(dataList[0][2]).cast().runtimeType);
+
+      List data = CsvToListConverter().convert(await file.readAsString())[0];
+      print(data.length);
       List<Activity> sampleActivitiesTemp =
-          List<Activity>.generate(dataList.length, (i) {
-        return Activity(
-          dataList[i][0],
-          dataList[i][1],
-          json.decode(dataList[i][2]),
-        );
+          List<Activity>.generate(data.length, (i) {
+        return Activity.fromJson(jsonDecode(data[i]));
       });
-      
+
       sampleActivities.addAll(sampleActivitiesTemp);
       print("Read success");
       print("${sampleActivities[0].data}");
@@ -50,24 +73,14 @@ class MainScreenState extends State<MainScreen> {
     final File file = File("${directory.path}/activitiesData.csv");
     await file.writeAsString("");
     print(sampleActivities.length); // empty the previous contents
-    Map<String, List> myMap = {};
-    sampleActivities.forEach((act) {
-      myMap[act.name] = [act.name, act.description, act.data];
-    });
-
+    List jsonData = [];
     sampleActivities.forEach((act) async {
       if (act.data.isEmpty) {
         return;
       }
-      await file.writeAsString(
-          ListToCsvConverter().convert(
-                [
-                  [act.name, act.description, json.encode(act.data)]
-                ],
-              ) +
-              "\n",
-          mode: FileMode.append);
+      jsonData.add(jsonEncode(act.toJson()));
     });
+    file.writeAsString(ListToCsvConverter().convert([jsonData]));
     print("Saved successfully");
     return true;
   }
@@ -104,23 +117,34 @@ class MainScreenState extends State<MainScreen> {
           ),
           actions: <Widget>[
             FlatButton(
+              child: Text('DELETE'),
+              onPressed: () async {
+                if (sampleActivities.contains(activity)) {
+                  sampleActivities.remove(activity);
+                }
+                await autoSaveData();
+                setState(() {});
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
               child: Text('CANCEL'),
               onPressed: () async {
                 Navigator.of(context).pop();
               },
             ),
             FlatButton(
-              child: Text('ADD'),
-              onPressed: () async {
-                if (name != null && description != null) {
-                  sampleActivities.remove(activity);
-                  sampleActivities
-                      .add(Activity(name, description, activity.data));
-                  setState(() {});
-                  await autoSaveData();
-                  Navigator.of(context).pop();
-                }
-              },
+              child: Text('DONE'),
+              onPressed: (name != null && description != null)
+                  ? () async {
+                      sampleActivities.remove(activity);
+                      sampleActivities
+                          .add(Activity(name, description, activity.data));
+                      await autoSaveData();
+                      setState(() {});
+                      Navigator.of(context).pop();
+                    }
+                  : null,
             ),
           ],
         );
@@ -445,25 +469,5 @@ class ActivityScreenState extends State<ActivityScreen> {
         },
       ),
     );
-  }
-}
-
-class Activity {
-  String name;
-  String description;
-  List<List> data;
-  Activity(this.name, this.description, this.data) {
-    List<String> words = name.split(" ");
-    List<String> capitalized = [];
-    words.forEach((f) {
-      if (f.length > 0) {
-        capitalized.add(f[0].toUpperCase() + f.substring(1));
-      } else {
-        capitalized.add(f);
-      }
-    });
-    this.name = capitalized.reduce((a, b) {
-      return a + b;
-    });
   }
 }
